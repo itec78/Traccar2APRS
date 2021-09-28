@@ -12,7 +12,7 @@ import aprslib
 #read config
 with open(os.path.join(sys.path[0],"config.json")) as json_data_file:
     conf = json.load(json_data_file)
-    print(conf)
+
     TRACCAR_URL = conf['TRACCAR_URL']
     TRACCAR_USER = conf['TRACCAR_USER']
     TRACCAR_PASSWORD = conf['TRACCAR_PASSWORD']
