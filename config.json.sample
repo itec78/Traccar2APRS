@@ -1,0 +1,13 @@
+{
+    "TRACCAR_URL": "http://localhost:8082",
+    "TRACCAR_USER": "aprsgw",
+    "TRACCAR_PASSWORD": "password",
+    "TRACCAR_DEVICEID": "1",
+    "APRS_CALLSIGN": "NOCALL",
+    "APRS_SSID": "12",
+    "APRS_SYMBOL": "/>",
+    "APRS_COMMENT": "Traccar2APRS https://traccar2aprs.vado.li/",
+    "LOOPTIME": 30,
+    "MINUPDATETIME": 60,
+    "MINDISTANCE": 100
+}
