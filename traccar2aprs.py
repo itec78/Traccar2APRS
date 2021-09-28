@@ -13,19 +13,21 @@ import aprslib
 with open(os.path.join(sys.path[0],"config.json")) as json_data_file:
     conf = json.load(json_data_file)
 
-    TRACCAR_URL = conf['TRACCAR_URL']
-    TRACCAR_USER = conf['TRACCAR_USER']
-    TRACCAR_PASSWORD = conf['TRACCAR_PASSWORD']
-    TRACCAR_DEVICEID = conf['TRACCAR_DEVICEID']
+    TRACCAR_URL = conf.get('TRACCAR_URL')
+    TRACCAR_USER = conf.get('TRACCAR_USER')
+    TRACCAR_PASSWORD = conf.get('TRACCAR_PASSWORD')
+    TRACCAR_DEVICEID = conf.get('TRACCAR_DEVICEID')
 
-    APRS_CALLSIGN = conf['APRS_CALLSIGN']
-    APRS_SSID = conf['APRS_SSID']
-    APRS_SYMBOL = conf['APRS_SYMBOL']
-    APRS_COMMENT = conf['APRS_COMMENT']
+    APRS_CALLSIGN = conf.get('APRS_CALLSIGN') or "NOCALL"
+    APRS_SSID = conf.get('APRS_SSID') or "12"
+    APRS_SYMBOL = conf.get('APRS_SYMBOL') or "/>"
+    APRS_COMMENT = conf.get('APRS_COMMENT') or "Traccar2APRS https://traccar2aprs.vado.li/"
 
-    LOOPTIME = conf['LOOPTIME']
-    MINUPDATETIME = conf['MINUPDATETIME']
-    MINDISTANCE = conf['MINDISTANCE']
+    LOOPTIME = conf.get('LOOPTIME') or 60
+    EXPIRETIME = conf.get('EXPIRETIME') or 180
+    MINUPDATETIME = conf.get('MINUPDATETIME') or 60
+    MINDISTANCE = conf.get('MINDISTANCE') or 100
+    DEBUG = conf.get('DEBUG') or False
 
 
 
@@ -38,6 +40,9 @@ def main():
 
     lastpos = None
     lastupdate = None
+
+    if DEBUG:
+        print("DEBUG")
     while True:
     
         payload = {'deviceId': TRACCAR_DEVICEID}
@@ -54,15 +59,20 @@ def main():
         
         pos = (lat, lon)
         tim = datetime.strptime(stime, "%Y-%m-%dT%H:%M:%S.%f%z")
+        timediff = (datetime.now(timezone.utc) - tim).total_seconds()
+        if DEBUG:
+            print("TimeDiff" ,timediff)
 
-        if (datetime.now(timezone.utc) - tim).total_seconds() < 300: #skip if data is too old
+        if timediff <= EXPIRETIME: #skip if data is too old
             if lastpos == None: lastpos = pos
             if lastupdate == None: lastupdate = tim
         
-            if (distance.distance(pos, lastpos).m >= MINDISTANCE and (datetime.now(timezone.utc) - lastupdate).total_seconds() >= MINUPDATETIME):
-                #print("Distance ", distance.distance(pos, lastpos).m)
-                #print("LastUpdate ", (datetime.now(timezone.utc) - lastupdate).total_seconds())
+            if DEBUG:
+                print("Distance ", distance.distance(pos, lastpos).m)
+                print("LastUpdate ", (datetime.now(timezone.utc) - lastupdate).total_seconds())
 
+            if (distance.distance(pos, lastpos).m >= MINDISTANCE and (datetime.now(timezone.utc) - lastupdate).total_seconds() >= MINUPDATETIME - 2):
+                
                 pr = aprslib.packets.PositionReport()
                 pr.fromcall = APRS_CALLSIGN +'-'+ APRS_SSID
                 pr.tocall = 'TRCCAR'
@@ -82,7 +92,10 @@ def main():
                 lastpos = pos
                 lastupdate = datetime.now(timezone.utc)
 
-        sleep(LOOPTIME - time() % LOOPTIME)
+        nextloop = (LOOPTIME - timediff) % LOOPTIME + 2
+        if DEBUG:
+            print("NextLoop ", nextloop)
+        sleep(nextloop)
         
 
 
