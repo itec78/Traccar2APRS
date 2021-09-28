@@ -75,7 +75,7 @@ def main():
                 
                 pr = aprslib.packets.PositionReport()
                 pr.fromcall = APRS_CALLSIGN +'-'+ APRS_SSID
-                pr.tocall = 'TRCCAR'
+                pr.tocall = 'TRCCAR,TCPIP*'
                 pr.symbol_table =APRS_SYMBOL[0]
                 pr.symbol = APRS_SYMBOL[1]
                 pr.comment = APRS_COMMENT
